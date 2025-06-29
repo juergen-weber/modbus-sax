@@ -351,13 +351,20 @@ func (e errTransactionIDMismatch) Error() string {
 }
 
 func verify(aduRequest []byte, aduResponse []byte) (err error) {
-	// Transaction id
-	responseVal := binary.BigEndian.Uint16(aduResponse)
-	requestVal := binary.BigEndian.Uint16(aduRequest)
-	if responseVal != requestVal {
-		err = errTransactionIDMismatch{got: responseVal, expected: requestVal}
+
+	// LSB of the int16 Transaction id (1 byte)
+	if aduResponse[1] != aduRequest[1] {
+		err = fmt.Errorf("modbus: response transaction id '%v' does not match request '%v'", aduResponse[1], aduRequest[1])
 		return
 	}
+	
+	// Transaction id
+	//responseVal := binary.BigEndian.Uint16(aduResponse)
+	//requestVal := binary.BigEndian.Uint16(aduRequest)
+	//if responseVal != requestVal {
+	//	err = errTransactionIDMismatch{got: responseVal, expected: requestVal}
+	//	return
+	//}
 	// Protocol id
 	responseVal = binary.BigEndian.Uint16(aduResponse[2:])
 	requestVal = binary.BigEndian.Uint16(aduRequest[2:])
